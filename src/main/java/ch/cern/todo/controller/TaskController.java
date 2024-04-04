@@ -17,7 +17,7 @@ import java.util.Optional;
 public class TaskController {
 
     private final TaskService taskService;
-    //TODO add bodyresponse with code and desc of error instead of string
+
     @GetMapping
     public List<Task> getAllTasks() {
         return taskService.getAllTasks();
@@ -34,7 +34,6 @@ public class TaskController {
     public ResponseEntity<Void> createTask(@RequestBody Task task) {
         taskService.createTask(task);
         return ResponseEntity.status(HttpStatus.CREATED).build();
-
     }
 
     @DeleteMapping("/{id}")
@@ -54,7 +53,7 @@ public class TaskController {
         if (deadline.isBefore(LocalDateTime.now())) {
             return ResponseEntity.badRequest().body("The deadline cannot be in the past");
         }
-        taskService.updateTask(id, deadline);
+        Task task = taskService.updateTask(id, deadline); //TODO understand what to return
         return ResponseEntity.status(HttpStatus.OK).body("task updated successfully");
     }
 }
