@@ -36,8 +36,8 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategoryById(@PathVariable Long id) {
+    public ResponseEntity<Long> deleteCategoryById(@PathVariable Long id) {
         categoryService.deleteCategoryIfNotReferenced(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(id);
     }
 }

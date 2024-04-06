@@ -37,23 +37,23 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTaskById(@PathVariable Long id) {
+    public ResponseEntity<Long> deleteTaskById(@PathVariable Long id) {
         if (taskService.deleteTaskById(id)) {
-            return ResponseEntity.ok("Task deleted successfully.");
+            return ResponseEntity.ok(id);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<String> updateTask(@PathVariable Long id, @RequestBody LocalDateTime deadline) {
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody LocalDateTime deadline) {
         if (deadline == null) {
-            return ResponseEntity.badRequest().body("The deadline should be a valid timestamp");
+            return ResponseEntity.badRequest().body(null);
         }
         if (deadline.isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body("The deadline cannot be in the past");
+            return ResponseEntity.badRequest().body(null);
         }
-        Task task = taskService.updateTask(id, deadline); //TODO understand what to return
-        return ResponseEntity.status(HttpStatus.OK).body("task updated successfully");
+        Task task = taskService.updateTask(id, deadline);
+        return ResponseEntity.status(HttpStatus.OK).body(task);
     }
 }

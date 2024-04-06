@@ -16,6 +16,18 @@ This is a simple spring boot app for managing tasks and related categories.
 
 **Description:** Retrieves a task by its ID.
 
+### Get all categories
+
+**Endpoint:** `GET /api/v1/todo/categories`
+
+**Description:** Retrieves all categories.
+
+### Get category by ID
+
+**Endpoint:** `GET /api/v1/todo/categories/{id}`
+
+**Description:** Retrieves a category by its ID.
+
 ### Create a new task
 
 **Endpoint:** `POST /api/v1/todo/tasks`
@@ -31,11 +43,30 @@ This is a simple spring boot app for managing tasks and related categories.
 }
 ```
 
+### Create a new category
+
+**Endpoint:** `POST /api/v1/todo/categories`
+
+**Description:** Creates a new category.
+**Request Body:**
+```json
+{
+    "name": "category name",
+    "description": "category description"
+}
+```
+
 ### Delete task by ID
 
 **Endpoint:** `DELETE /api/v1/todo/tasks/{id}`
 
 **Description:** Deletes a task by its ID.
+
+### Delete category by ID
+
+**Endpoint:** `DELETE /api/v1/todo/categories/{id}`
+
+**Description:** Deletes a category by its ID.
 
 ### Update task deadline
 

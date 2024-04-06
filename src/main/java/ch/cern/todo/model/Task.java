@@ -1,13 +1,17 @@
 package ch.cern.todo.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Task {
     @jakarta.persistence.Id
     @Column(name = "task_id")
@@ -20,7 +24,6 @@ public class Task {
     @Column(name = "task_description")
     private String description;
 
-    //TODO add validation
     private LocalDateTime deadline;
 
     @Column(name = "category_id")
