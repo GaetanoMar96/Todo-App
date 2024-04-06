@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/categories")
+@RequestMapping("/api/v1/todo/categories")
 @RequiredArgsConstructor
 public class CategoryController {
 

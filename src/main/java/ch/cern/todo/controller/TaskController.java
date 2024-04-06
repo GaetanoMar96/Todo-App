@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/tasks")
+@RequestMapping("/api/v1/todo/tasks")
 @RequiredArgsConstructor
 public class TaskController {
 

@@ -14,8 +14,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @Sql(scripts = {"classpath:/scripts/create-h2.sql", "classpath:/scripts/insert-h2.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = {"classpath:/scripts/drop-h2.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
@@ -23,29 +23,32 @@ class TaskControllerTest extends BaseIntegrationTest {
 
     @Autowired
     private TaskRepository taskRepository;
-    //TODO add JSON pATH matcher
+
     @Test
     void getAllTasksTest_StatusOk() throws Exception {
-        mockMvc.perform(get("/api/v1/tasks")
+        mockMvc.perform(get("/api/v1/todo/tasks")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
-
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].name").value("backend development"))
+                .andExpect(jsonPath("$[0].description").value("be development in java"));
     }
 
     @Test
     void getTaskByIdTest_StatusOk() throws Exception {
-        mockMvc.perform(get("/api/v1/tasks/{id}", 2)
+        mockMvc.perform(get("/api/v1/todo/tasks/{id}", 2)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
-                        .contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                        .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.name").value("backend development"))
+                .andExpect(jsonPath("$.description").value("be development in java"));
 
     }
 
     @Test
     void getTaskByIdTest_StatusNotFound() throws Exception {
-        mockMvc.perform(get("/api/v1/tasks/{id}", 3)
+        mockMvc.perform(get("/api/v1/todo/tasks/{id}", 3)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -59,7 +62,7 @@ class TaskControllerTest extends BaseIntegrationTest {
         task.setDeadline(LocalDateTime.now());
         task.setCategoryId(4L);
 
-        mockMvc.perform(post("/api/v1/tasks")
+        mockMvc.perform(post("/api/v1/todo/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(task))
                         .accept(MediaType.APPLICATION_JSON))
@@ -68,18 +71,21 @@ class TaskControllerTest extends BaseIntegrationTest {
         Optional<Task> taskOptional = taskRepository.findById(1L);
         assertTrue(taskOptional.isPresent());
         assertEquals(1L, taskOptional.get().getTaskId());
+        assertEquals(2, taskRepository.findAll().size());
     }
 
     @Test
     void deleteTaskByIdTest_StatusOk() throws Exception {
-        mockMvc.perform(delete("/api/v1/tasks/{id}", 2)
+        mockMvc.perform(delete("/api/v1/todo/tasks/{id}", 2)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+
+        assertTrue(taskRepository.findAll().isEmpty());
     }
 
     @Test
     void deleteCategoryByIdTest_StatusNotFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/tasks/{id}", 1)
+        mockMvc.perform(delete("/api/v1/todo/tasks/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -90,7 +96,7 @@ class TaskControllerTest extends BaseIntegrationTest {
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
         LocalDateTime currentDeadLine = LocalDateTime.now().plusDays(1);
 
-        mockMvc.perform(patch("/api/v1/tasks/{id}", 2)
+        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(currentDeadLine))
                         .accept(MediaType.APPLICATION_JSON))
@@ -101,7 +107,6 @@ class TaskControllerTest extends BaseIntegrationTest {
         assertNotEquals(previousDeadLine, taskOptionalPostUpdate.get().getDeadline());
         //TODO capire perché non è uguale, da riflettere su TIMESTAMP
         //assertEquals(currentDeadLine, taskOptionalPostUpdate.get().getDeadline());
-
     }
 
     @Test
@@ -110,7 +115,7 @@ class TaskControllerTest extends BaseIntegrationTest {
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
         LocalDateTime currentDeadLine = LocalDateTime.of(2024, Month.MARCH, 3, 15, 4);
 
-        mockMvc.perform(patch("/api/v1/tasks/{id}", 2)
+        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(currentDeadLine))
                         .accept(MediaType.APPLICATION_JSON))
@@ -125,7 +130,7 @@ class TaskControllerTest extends BaseIntegrationTest {
     void updateTaskByIdTest_StatusBadRequest_DeadlineNull() throws Exception {
         Optional<Task> taskOptionalPreUpdate = taskRepository.findById(2L);
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
-        mockMvc.perform(patch("/api/v1/tasks/{id}", 2)
+        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 2)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(null))
                         .accept(MediaType.APPLICATION_JSON))

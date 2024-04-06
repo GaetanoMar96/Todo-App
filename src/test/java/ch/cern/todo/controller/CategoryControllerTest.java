@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,29 +25,33 @@ public class CategoryControllerTest extends BaseIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
-    //TODO add JSON pATH matcher
+
     @Test
     void getAllCategoriesTest_StatusOk() throws Exception {
-        mockMvc.perform(get("/api/v1/categories")
+        mockMvc.perform(get("/api/v1/todo/categories")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
-
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].name").value("development"))
+                .andExpect(jsonPath("$[0].description").value("software development"))
+                .andExpect(jsonPath("$[1].name").value("testing"))
+                .andExpect(jsonPath("$[1].description").value("unit tests"));
     }
 
     @Test
     void getCategoryByIdTest_StatusOk() throws Exception {
-        mockMvc.perform(get("/api/v1/categories/{id}", 4)
+        mockMvc.perform(get("/api/v1/todo/categories/{id}", 4)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
-                        .contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
-
+                        .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.name").value("development"))
+                .andExpect(jsonPath("$.description").value("software development"));
     }
 
     @Test
     void getCategoryByIdTest_StatusNotFound() throws Exception {
-        mockMvc.perform(get("/api/v1/categories/{id}", 6)
+        mockMvc.perform(get("/api/v1/todo/categories/{id}", 6)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
@@ -57,7 +62,7 @@ public class CategoryControllerTest extends BaseIntegrationTest {
         Category category = new Category();
         category.setName("testing");
         category.setDescription("integration testing");
-        mockMvc.perform(post("/api/v1/categories")
+        mockMvc.perform(post("/api/v1/todo/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(category))
                         .accept(MediaType.APPLICATION_JSON))
@@ -70,7 +75,7 @@ public class CategoryControllerTest extends BaseIntegrationTest {
 
     @Test
     void deleteCategoryByIdTest_StatusBadRequest() throws Exception {
-        mockMvc.perform(delete("/api/v1/categories/{id}", 4)
+        mockMvc.perform(delete("/api/v1/todo/categories/{id}", 4)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
@@ -78,14 +83,16 @@ public class CategoryControllerTest extends BaseIntegrationTest {
 
     @Test
     void deleteCategoryByIdTest_StatusOk() throws Exception {
-        mockMvc.perform(delete("/api/v1/categories/{id}", 5)
+        mockMvc.perform(delete("/api/v1/todo/categories/{id}", 5)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        List<Category> categoryList = categoryRepository.findAll();
+        assertEquals(1, categoryList.size());
     }
 
     @Test
     void deleteCategoryByIdTest_StatusNotFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/categories/{id}", 6)
+        mockMvc.perform(delete("/api/v1/todo/categories/{id}", 6)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
