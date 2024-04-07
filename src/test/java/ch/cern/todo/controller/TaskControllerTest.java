@@ -6,7 +6,6 @@ import ch.cern.todo.repository.TaskRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -17,8 +16,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@Sql(scripts = {"classpath:/scripts/create-h2.sql", "classpath:/scripts/insert-h2.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = {"classpath:/scripts/drop-h2.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class TaskControllerTest extends BaseIntegrationTest {
 
     @Autowired
@@ -36,7 +33,7 @@ class TaskControllerTest extends BaseIntegrationTest {
 
     @Test
     void getTaskByIdTest_StatusOk() throws Exception {
-        mockMvc.perform(get("/api/v1/todo/tasks/{id}", 2)
+        mockMvc.perform(get("/api/v1/todo/tasks/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
@@ -59,8 +56,8 @@ class TaskControllerTest extends BaseIntegrationTest {
         Task task = new Task();
         task.setName("frontend development");
         task.setDescription("fe development with angular");
-        task.setDeadline(LocalDateTime.now());
-        task.setCategoryId(4L);
+        task.setDeadline(LocalDateTime.now().plusDays(1));
+        task.setCategoryId(1L);
 
         mockMvc.perform(post("/api/v1/todo/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,15 +65,15 @@ class TaskControllerTest extends BaseIntegrationTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        Optional<Task> taskOptional = taskRepository.findById(1L);
+        Optional<Task> taskOptional = taskRepository.findById(2L);
         assertTrue(taskOptional.isPresent());
-        assertEquals(1L, taskOptional.get().getTaskId());
+        assertEquals(2L, taskOptional.get().getTaskId());
         assertEquals(2, taskRepository.findAll().size());
     }
 
     @Test
     void deleteTaskByIdTest_StatusOk() throws Exception {
-        mockMvc.perform(delete("/api/v1/todo/tasks/{id}", 2)
+        mockMvc.perform(delete("/api/v1/todo/tasks/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
@@ -85,52 +82,51 @@ class TaskControllerTest extends BaseIntegrationTest {
 
     @Test
     void deleteCategoryByIdTest_StatusNotFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/todo/tasks/{id}", 1)
+        mockMvc.perform(delete("/api/v1/todo/tasks/{id}", 2)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void updateTaskByIdTest_StatusOk() throws Exception {
-        Optional<Task> taskOptionalPreUpdate = taskRepository.findById(2L);
+        Optional<Task> taskOptionalPreUpdate = taskRepository.findById(1L);
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
         LocalDateTime currentDeadLine = LocalDateTime.now().plusDays(1);
 
-        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 2)
+        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(currentDeadLine))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        Optional<Task> taskOptionalPostUpdate = taskRepository.findById(2L);
+        Optional<Task> taskOptionalPostUpdate = taskRepository.findById(1L);
         assertTrue(taskOptionalPostUpdate.isPresent());
         assertNotEquals(previousDeadLine, taskOptionalPostUpdate.get().getDeadline());
-        //TODO capire perché non è uguale, da riflettere su TIMESTAMP
-        //assertEquals(currentDeadLine, taskOptionalPostUpdate.get().getDeadline());
+        assertTrue(taskOptionalPostUpdate.get().getDeadline().isAfter(LocalDateTime.now()));
     }
 
     @Test
     void updateTaskByIdTest_StatusBadRequest_DateInThePast() throws Exception {
-        Optional<Task> taskOptionalPreUpdate = taskRepository.findById(2L);
+        Optional<Task> taskOptionalPreUpdate = taskRepository.findById(1L);
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
         LocalDateTime currentDeadLine = LocalDateTime.of(2024, Month.MARCH, 3, 15, 4);
 
-        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 2)
+        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(currentDeadLine))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
-        Optional<Task> taskOptionalPostUpdate = taskRepository.findById(2L);
+        Optional<Task> taskOptionalPostUpdate = taskRepository.findById(1L);
         assertTrue(taskOptionalPostUpdate.isPresent());
         assertEquals(previousDeadLine, taskOptionalPostUpdate.get().getDeadline());
     }
 
     @Test
     void updateTaskByIdTest_StatusBadRequest_DeadlineNull() throws Exception {
-        Optional<Task> taskOptionalPreUpdate = taskRepository.findById(2L);
+        Optional<Task> taskOptionalPreUpdate = taskRepository.findById(1L);
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
-        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 2)
+        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(null))
                         .accept(MediaType.APPLICATION_JSON))

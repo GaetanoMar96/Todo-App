@@ -29,6 +29,10 @@ public class TaskService {
     }
 
     public void createTask(Task task) {
+        //Check if the deadline is after today date
+        if (task.getDeadline() != null && task.getDeadline().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("The deadline is before today date");
+        }
         // Check if the category ID exists in the Category table
         Optional<Category> categoryOptional = categoryRepository.findById(task.getCategoryId());
         if (categoryOptional.isPresent()) {
@@ -51,7 +55,7 @@ public class TaskService {
         Optional<Task> existingTaskOptional = taskRepository.findById(id);
         if (existingTaskOptional.isPresent()) {
             Task existingTask = existingTaskOptional.get();
-            existingTask.setDeadline(deadline);
+            existingTask.setDeadline(deadline.plusHours(2)); //due to mismatch of timezone
             return taskRepository.save(existingTask);
         }
         throw new DataNotFoundException("Unable to find the requested task");

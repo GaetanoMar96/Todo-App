@@ -99,6 +99,22 @@ To run the application, execute the following command in the terminal:
 ```
 This will start the application on the default port 8080
 
+## How to Run the Application using Docker
+
+To run the application using docker, execute the following command in the terminal where the docker file is located:
+
+```bash
+docker build -t your-image-name .
+```
+
+then to run the container 
+
+```bash
+docker run -p 8080:8080 your-image-name
+```
+
+This will start the application on the default port 8080
+
 ## How to Test the Application
 
 To test the application, execute the following command in the terminal:

@@ -6,21 +6,17 @@ import ch.cern.todo.repository.CategoryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Sql(scripts = {"classpath:/scripts/create-h2.sql", "classpath:/scripts/insert-h2.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = {"classpath:/scripts/drop-h2.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 public class CategoryControllerTest extends BaseIntegrationTest {
 
     @Autowired
@@ -40,7 +36,7 @@ public class CategoryControllerTest extends BaseIntegrationTest {
 
     @Test
     void getCategoryByIdTest_StatusOk() throws Exception {
-        mockMvc.perform(get("/api/v1/todo/categories/{id}", 4)
+        mockMvc.perform(get("/api/v1/todo/categories/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content()
@@ -60,22 +56,37 @@ public class CategoryControllerTest extends BaseIntegrationTest {
     @Test
     void createCategory_StatusCreated() throws Exception {
         Category category = new Category();
-        category.setName("testing");
-        category.setDescription("integration testing");
+        category.setName("code review");
+        category.setDescription("java code review");
         mockMvc.perform(post("/api/v1/todo/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(category))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        Optional<Category> categoryOptional = categoryRepository.findById(1L);
+        Optional<Category> categoryOptional = categoryRepository.findById(3L);
         assertTrue(categoryOptional.isPresent());
-        assertEquals(1L, categoryOptional.get().getId());
+        assertEquals(3L, categoryOptional.get().getId());
+    }
+
+    @Test
+    void createCategory_StatusBadRequest() throws Exception {
+        Category category = new Category();
+        category.setName("testing"); //already present should cause data integrity violation
+        category.setDescription("integration testing");
+        mockMvc.perform(post("/api/v1/todo/categories")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(category))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        //assert that category was not inserted
+        Optional<Category> categoryOptional = categoryRepository.findById(3L);
+        assertFalse(categoryOptional.isPresent());
     }
 
     @Test
     void deleteCategoryByIdTest_StatusBadRequest() throws Exception {
-        mockMvc.perform(delete("/api/v1/todo/categories/{id}", 4)
+        mockMvc.perform(delete("/api/v1/todo/categories/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
@@ -83,7 +94,7 @@ public class CategoryControllerTest extends BaseIntegrationTest {
 
     @Test
     void deleteCategoryByIdTest_StatusOk() throws Exception {
-        mockMvc.perform(delete("/api/v1/todo/categories/{id}", 5)
+        mockMvc.perform(delete("/api/v1/todo/categories/{id}", 2)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         List<Category> categoryList = categoryRepository.findAll();

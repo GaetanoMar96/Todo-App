@@ -34,8 +34,8 @@ public class TaskServiceTest {
     @Test
     void testGetAllTasks() {
         List<Task> tasks = new ArrayList<>();
-        tasks.add(new Task(1L, "Task 1", "Description 1", LocalDateTime.now(), 1L));
-        tasks.add(new Task(2L, "Task 2", "Description 2", LocalDateTime.now(), 2L));
+        tasks.add(new Task(1L, "Code refactor", "Java code refactor", LocalDateTime.now(), 1L));
+        tasks.add(new Task(2L, "Code refactor", "Python code refactor", LocalDateTime.now(), 2L));
 
         when(taskRepository.findAll()).thenReturn(tasks);
 
@@ -47,7 +47,7 @@ public class TaskServiceTest {
 
     @Test
     void testGetTaskById() {
-        Task task = new Task(1L, "Task 1", "Description 1", LocalDateTime.now(), 1L);
+        Task task = new Task(1L, "Code refactor", "Java code refactor", LocalDateTime.now(), 1L);
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
 
         Optional<Task> result = taskService.getTaskById(1L);
@@ -58,8 +58,8 @@ public class TaskServiceTest {
 
     @Test
     void testCreateTaskValidCategoryId() {
-        Task task = new Task(1L, "Task 1", "Description 1", LocalDateTime.now(), 1L);
-        Category category = new Category(1L, "Category 1", "Description 1");
+        Task task = new Task(1L, "Code refactor", "Java code refactor", LocalDateTime.now().plusDays(1), 1L);
+        Category category = new Category(1L, "Refactor", "Code refactor");
 
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
 
@@ -70,7 +70,7 @@ public class TaskServiceTest {
 
     @Test
     void testCreateTaskInvalidCategoryId() {
-        Task task = new Task(1L, "Task 1", "Description 1", LocalDateTime.now(), 99L);
+        Task task = new Task(1L, "Code refactor", "Java code refactor", LocalDateTime.now(), 99L);
 
         when(categoryRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -100,8 +100,8 @@ public class TaskServiceTest {
     void testUpdateTask() {
         Long taskId = 1L;
         LocalDateTime newDeadline = LocalDateTime.now().plusDays(1);
-        Task existingTask = new Task(taskId, "Task 1", "Description 1", LocalDateTime.now(), 1L);
-        Task updatedTask = new Task(taskId, "Task 1", "Description 1", newDeadline, 1L);
+        Task existingTask = new Task(taskId, "Code refactor", "Java code refactor", LocalDateTime.now(), 1L);
+        Task updatedTask = new Task(taskId, "Code refactor", "Java code refactor", newDeadline, 1L);
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
         when(taskRepository.save(existingTask)).thenReturn(updatedTask);

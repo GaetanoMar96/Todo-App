@@ -32,8 +32,8 @@ class CategoryServiceTest {
     @Test
     void testGetAllCategories() {
         List<Category> categories = new ArrayList<>();
-        categories.add(new Category(1L, "Category 1", "Description 1"));
-        categories.add(new Category(2L, "Category 2", "Description 2"));
+        categories.add(new Category(1L, "Development", "java development"));
+        categories.add(new Category(2L, "Testing", "integration testing"));
 
         when(categoryRepository.findAll()).thenReturn(categories);
 
@@ -45,7 +45,7 @@ class CategoryServiceTest {
 
     @Test
     void testGetCategoryById() {
-        Category category = new Category(1L, "Category 1", "Description 1");
+        Category category = new Category(1L, "Development", "java development");
         when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
 
         Optional<Category> result = categoryService.getCategoryById(1L);
@@ -55,7 +55,7 @@ class CategoryServiceTest {
 
     @Test
     void testCreateCategory() {
-        Category category = new Category(1L, "Category 1", "Description 1");
+        Category category = new Category(1L, "Development", "java development");
         categoryService.createCategory(category);
         verify(categoryRepository, times(1)).save(category);
     }

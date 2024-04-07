@@ -3,7 +3,7 @@ CREATE SEQUENCE IF NOT EXISTS tasks_seq START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE IF NOT EXISTS tasks_categories(
     category_id NUMBER AUTO_INCREMENT primary key,
-    category_name varchar2 NOT NULL,
+    category_name varchar2 UNIQUE NOT NULL,
     category_description varchar2
 );
 

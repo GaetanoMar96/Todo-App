@@ -1,6 +1,7 @@
 package ch.cern.todo.exception;
 
 import jakarta.persistence.PersistenceException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,8 +20,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequest(BadRequestException ex) {
-        ApiError apiError = new ApiError(BAD_REQUEST);
-        apiError.setMessage(ex.getMessage());
+        ApiError apiError = new ApiError(BAD_REQUEST, ex.getMessage());
         apiError.setDebugMessage(getDebugMessageIfExists(ex));
         return buildResponseEntity(apiError);
     }
@@ -47,9 +47,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(DataNotFoundException.class)
     public ResponseEntity<Object> handleDataNotFound(DataNotFoundException ex) {
-        ApiError apiError = new ApiError(NOT_FOUND);
-        apiError.setMessage(ex.getMessage());
+        ApiError apiError = new ApiError(NOT_FOUND, ex.getMessage());
         apiError.setDebugMessage(getDebugMessageIfExists(ex));
+        return buildResponseEntity(apiError);
+    }
+
+    /**
+     * Handles DataIntegrityViolationException. Created to encapsulate errors when inserting categories.
+     *
+     * @param ex the DataIntegrityViolationException
+     * @return the ApiError object
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        ApiError apiError = new ApiError(BAD_REQUEST, "Data integrity violation");
+        apiError.setDebugMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }
 
