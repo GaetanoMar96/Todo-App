@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tasks
     deadline         timestamp NOT NULL,
     category_id      NUMBER    NOT NULL
 );
-/* TO BE COMMENTED AFTER 1st RUN
+/* TO BE COMMENTED AFTER 1st RUN to have already some categories
 INSERT INTO tasks_categories(category_name, category_description)
 VALUES ('development', 'software development'),
        ('testing', 'unit tests'),

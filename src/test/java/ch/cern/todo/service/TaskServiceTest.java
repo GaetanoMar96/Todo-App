@@ -101,12 +101,12 @@ public class TaskServiceTest {
         Long taskId = 1L;
         LocalDateTime newDeadline = LocalDateTime.now().plusDays(1);
         Task existingTask = new Task(taskId, "Code refactor", "Java code refactor", LocalDateTime.now(), 1L);
-        Task updatedTask = new Task(taskId, "Code refactor", "Java code refactor", newDeadline, 1L);
+        Task updatedTask = new Task(taskId, "Code refactor", "Python code refactor", newDeadline, 1L);
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));
         when(taskRepository.save(existingTask)).thenReturn(updatedTask);
 
-        Task result = taskService.updateTask(taskId, newDeadline);
+        Task result = taskService.updateTask(updatedTask);
 
         assertEquals(updatedTask, result);
         assertEquals(newDeadline, result.getDeadline());
@@ -116,11 +116,10 @@ public class TaskServiceTest {
     @Test
     void testUpdateTaskNotFound() {
         Long taskId = 1L;
-        LocalDateTime newDeadline = LocalDateTime.now().plusDays(1);
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
 
-        assertThrows(DataNotFoundException.class, () -> taskService.updateTask(taskId, newDeadline));
+        assertThrows(DataNotFoundException.class, () -> taskService.updateTask(new Task()));
         verify(taskRepository, never()).save(any());
     }
 }

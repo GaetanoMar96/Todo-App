@@ -8,6 +8,7 @@ import ch.cern.todo.repository.CategoryRepository;
 import ch.cern.todo.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,11 +52,14 @@ public class TaskService {
         return false; // Task with given id doesn't exist
     }
 
-    public Task updateTask(Long id, LocalDateTime deadline) {
-        Optional<Task> existingTaskOptional = taskRepository.findById(id);
+    public Task updateTask(Task updatedTask) {
+        Optional<Task> existingTaskOptional = taskRepository.findById(updatedTask.getTaskId());
         if (existingTaskOptional.isPresent()) {
             Task existingTask = existingTaskOptional.get();
-            existingTask.setDeadline(deadline.plusHours(2)); //due to mismatch of timezone
+            if (StringUtils.hasText(updatedTask.getDescription())) { //only if new description has text
+                existingTask.setDescription(updatedTask.getDescription()); //update description
+            }
+            existingTask.setDeadline(updatedTask.getDeadline()); //update deadline
             return taskRepository.save(existingTask);
         }
         throw new DataNotFoundException("Unable to find the requested task");

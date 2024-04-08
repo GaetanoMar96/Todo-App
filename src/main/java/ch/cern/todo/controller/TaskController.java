@@ -45,15 +45,15 @@ public class TaskController {
         }
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody LocalDateTime deadline) {
-        if (deadline == null) {
+    @PutMapping
+    public ResponseEntity<Task> updateTask(@RequestBody Task task) {
+        if (task == null || task.getTaskId() == null || task.getDeadline() == null) {
             return ResponseEntity.badRequest().body(null);
         }
-        if (deadline.isBefore(LocalDateTime.now())) {
+        if (task.getDeadline().isBefore(LocalDateTime.now())) {
             return ResponseEntity.badRequest().body(null);
         }
-        Task task = taskService.updateTask(id, deadline);
-        return ResponseEntity.status(HttpStatus.OK).body(task);
+        Task newTask = taskService.updateTask(task);
+        return ResponseEntity.status(HttpStatus.OK).body(newTask);
     }
 }

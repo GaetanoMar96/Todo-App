@@ -3,6 +3,7 @@ package ch.cern.todo.controller;
 import ch.cern.todo.BaseIntegrationTest;
 import ch.cern.todo.model.Category;
 import ch.cern.todo.repository.CategoryRepository;
+import ch.cern.todo.utils.Factory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -55,9 +56,8 @@ public class CategoryControllerTest extends BaseIntegrationTest {
 
     @Test
     void createCategory_StatusCreated() throws Exception {
-        Category category = new Category();
-        category.setName("code review");
-        category.setDescription("java code review");
+        Category category = Factory.getCategory("code review", "java code review");
+
         mockMvc.perform(post("/api/v1/todo/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(category))
@@ -71,9 +71,9 @@ public class CategoryControllerTest extends BaseIntegrationTest {
 
     @Test
     void createCategory_StatusBadRequest() throws Exception {
-        Category category = new Category();
-        category.setName("testing"); //already present should cause data integrity violation
-        category.setDescription("integration testing");
+        Category category = Factory.getCategory("testing", "integration testing");
+        //name already present should cause data integrity violation
+
         mockMvc.perform(post("/api/v1/todo/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(category))

@@ -3,6 +3,7 @@ package ch.cern.todo.controller;
 import ch.cern.todo.BaseIntegrationTest;
 import ch.cern.todo.model.Task;
 import ch.cern.todo.repository.TaskRepository;
+import ch.cern.todo.utils.Factory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -53,11 +54,10 @@ class TaskControllerTest extends BaseIntegrationTest {
 
     @Test
     void createTask_StatusCreated() throws Exception {
-        Task task = new Task();
-        task.setName("frontend development");
-        task.setDescription("fe development with angular");
-        task.setDeadline(LocalDateTime.now().plusDays(1));
-        task.setCategoryId(1L);
+        Task task = Factory.getTask("frontend development",
+                "fe development with angular",
+                LocalDateTime.now().plusDays(1),
+                1L);
 
         mockMvc.perform(post("/api/v1/todo/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -91,16 +91,21 @@ class TaskControllerTest extends BaseIntegrationTest {
     void updateTaskByIdTest_StatusOk() throws Exception {
         Optional<Task> taskOptionalPreUpdate = taskRepository.findById(1L);
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
-        LocalDateTime currentDeadLine = LocalDateTime.now().plusDays(1);
 
-        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 1)
+        Task newTask = Factory.getTask("backend development",
+                "backend development with python",
+                LocalDateTime.now().plusDays(1),
+                1L);
+        newTask.setTaskId(1L);
+        mockMvc.perform(put("/api/v1/todo/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(currentDeadLine))
+                        .content(mapper.writeValueAsString(newTask))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
         Optional<Task> taskOptionalPostUpdate = taskRepository.findById(1L);
         assertTrue(taskOptionalPostUpdate.isPresent());
+        assertEquals("backend development with python", taskOptionalPostUpdate.get().getDescription());
         assertNotEquals(previousDeadLine, taskOptionalPostUpdate.get().getDeadline());
         assertTrue(taskOptionalPostUpdate.get().getDeadline().isAfter(LocalDateTime.now()));
     }
@@ -111,9 +116,15 @@ class TaskControllerTest extends BaseIntegrationTest {
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
         LocalDateTime currentDeadLine = LocalDateTime.of(2024, Month.MARCH, 3, 15, 4);
 
-        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 1)
+        Task newTask = Factory.getTask("backend development",
+                "backend development with python",
+                currentDeadLine,
+                1L);
+        newTask.setTaskId(1L);
+
+        mockMvc.perform(put("/api/v1/todo/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(currentDeadLine))
+                        .content(mapper.writeValueAsString(newTask))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
 
@@ -126,9 +137,15 @@ class TaskControllerTest extends BaseIntegrationTest {
     void updateTaskByIdTest_StatusBadRequest_DeadlineNull() throws Exception {
         Optional<Task> taskOptionalPreUpdate = taskRepository.findById(1L);
         LocalDateTime previousDeadLine = getPreviousDeadLine(taskOptionalPreUpdate);
-        mockMvc.perform(patch("/api/v1/todo/tasks/{id}", 1)
+
+        Task newTask = Factory.getTask("backend development",
+                "backend development with python",
+                null,
+                1L);
+        newTask.setTaskId(1L);
+        mockMvc.perform(put("/api/v1/todo/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(null))
+                        .content(mapper.writeValueAsString(newTask))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
         taskOptionalPreUpdate.ifPresent(task -> assertEquals(previousDeadLine, task.getDeadline()));
